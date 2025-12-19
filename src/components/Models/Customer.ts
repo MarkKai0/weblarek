@@ -1,10 +1,10 @@
 import { IBuyer, TPayment } from "../../types";
 
-export class Customer implements IBuyer {
-    payment: TPayment = '';
-    email: string = '';
-    phone: string = '';
-    address: string = '';
+export class Customer {
+    private payment: TPayment = '';
+    private email: string = '';
+    private phone: string = '';
+    private address: string = '';
 
     setUser(data: Partial<IBuyer>): void {
         if (data.payment !== undefined) {
