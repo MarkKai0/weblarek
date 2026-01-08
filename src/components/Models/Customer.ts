@@ -1,27 +1,20 @@
-import { IBuyer, TPayment } from "../../types";
+import { IBuyer, TPayment } from '../../types';
+import { IEvents } from '../base/Events';
 
-export class Customer {
-    private payment: TPayment = '';
-    private email: string = '';
-    private phone: string = '';
-    private address: string = '';
+export class Customer implements IBuyer {
+    payment: TPayment = '';
+    email: string = '';
+    phone: string = '';
+    address: string = '';
 
-    setUser(data: Partial<IBuyer>): void {
-        if (data.payment !== undefined) {
-            this.payment = data.payment;
-        }
-        if (data.email !== undefined) {
-            this.email = data.email;
-        }
-        if (data.phone !== undefined) {
-            this.phone = data.phone;
-        }
-        if (data.address !== undefined) {
-            this.address = data.address;
-        }
+    constructor(protected events: IEvents) {}
+
+    setField(field: keyof IBuyer, value: string): void {
+        (this as Record<string, unknown>)[field] = value;
+        this.events.emit('customer:changed');
     }
 
-    getUser(): IBuyer {
+    getData(): IBuyer {
         return {
             payment: this.payment,
             email: this.email,
@@ -30,33 +23,30 @@ export class Customer {
         };
     }
 
-    removeUser(): void {
+    removeData(): void {
         this.payment = '';
         this.email = '';
         this.phone = '';
         this.address = '';
     }
-    
-    validateUser(): { [key: string]: string } {
-        const error: { [key: string]: string } = {};
 
+    validateOrder(): string | null {
         if (!this.payment) {
-            error.payment = 'Необходимо выбрать способ оплаты';
-        }
-        if (!this.email) {
-            error.email = 'Необходимо указать email';
-        }
-        if (!this.phone) {
-            error.phone = 'Необходимо указать телефон';
+            return 'Выберите способ оплаты';
         }
         if (!this.address) {
-            error.address = 'Необходимо указать адрес';
+            return 'Укажите адрес доставки';
         }
-
-        return error;
+        return null;
     }
 
-    isValid(): boolean {
-        return Object.keys(this.validateUser()).length === 0;
+    validateContacts(): string | null {
+        if (!this.email) {
+            return 'Укажите email';
+        }
+        if (!this.phone) {
+            return 'Укажите телефон';
+        }
+        return null;
     }
 }
