@@ -1,11 +1,10 @@
 import { Component } from '../base/Component';
-import { ensureElement } from '../../utils/utils';
 import { ICard } from '../../types';
+import { ensureElement } from '../../utils/utils';
 
 export class Card<T extends ICard = ICard> extends Component<T> {
     protected titleElement: HTMLElement;
     protected priceElement: HTMLElement;
-    protected _id: string = '';
 
     constructor(container: HTMLElement) {
         super(container);
@@ -14,23 +13,17 @@ export class Card<T extends ICard = ICard> extends Component<T> {
         this.priceElement = ensureElement<HTMLElement>('.card__price', this.container);
     }
 
-    set id(value: string) {
-        this._id = value;
-    }
-
-    get id(): string {
-        return this._id;
-    }
-
     set title(value: string) {
         this.titleElement.textContent = value;
     }
 
-    get title(): string {
-        return this.titleElement.textContent || '';
-    }
-
     set price(value: number | null) {
         this.priceElement.textContent = value === null ? 'Бесценно' : `${value} синапсов`;
+    }
+    
+    protected setImage(imgElement: HTMLImageElement, src: string, title?: string) {
+        imgElement.src = src;
+        imgElement.alt = title || '';
+        imgElement.title = title || '';
     }
 }
