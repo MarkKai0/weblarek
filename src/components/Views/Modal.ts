@@ -20,9 +20,14 @@ export class Modal extends Component<IModalData> {
         this.contentElement.addEventListener('click', (e) => e.stopPropagation());
     }
 
-    set content(value: HTMLElement) {
+    set content(value: HTMLElement | null) {
+    if (value) {
         this.contentElement.replaceChildren(value);
+    } else {
+        this.contentElement.replaceChildren();
     }
+}
+
 
     open(): void {
         this.container.classList.add('modal_active');
@@ -31,7 +36,7 @@ export class Modal extends Component<IModalData> {
 
     close(): void {
         this.container.classList.remove('modal_active');
-        this.content = null as unknown as HTMLElement;
+        this.content = null;
         this.events.emit('modal:close');
     }
 

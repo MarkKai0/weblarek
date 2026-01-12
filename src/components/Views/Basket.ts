@@ -21,18 +21,11 @@ export class Basket extends Component<IBasketData> {
     }
 
     set items(items: HTMLElement[]) {
-        if (items.length === 0) {
-            this.listElement.replaceChildren(
-                Object.assign(document.createElement('p'), {
-                    textContent: 'Корзина пуста'
-                })
-            );
-            this.buttonElement.disabled = true;
-        } else {
-            this.listElement.replaceChildren(...items);
-            this.buttonElement.disabled = false;
-        }
+        this.listElement.replaceChildren(...items);
+        this.buttonElement.disabled = items.length === 0;
+        this.container.classList.toggle('basket_empty', items.length === 0);
     }
+
 
     set total(value: number) {
         this.totalElement.textContent = `${value} синапсов`;

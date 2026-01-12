@@ -1,18 +1,19 @@
 import { IBuyer, TPayment } from '../../types';
 import { IEvents } from '../base/Events';
 
-export class Customer implements IBuyer {
-    payment: TPayment = '';
-    email: string = '';
-    phone: string = '';
-    address: string = '';
+export class Customer {
+    private payment: TPayment = '';
+    private email: string = '';
+    private phone: string = '';
+    private address: string = '';
 
     constructor(protected events: IEvents) {}
 
     setField(field: keyof IBuyer, value: string): void {
-        (this as Record<string, unknown>)[field] = value;
-        this.events.emit('customer:changed');
+    (this as Record<string, unknown>)[field] = value;
+    this.events.emit('order:update');
     }
+
 
     getData(): IBuyer {
         return {
@@ -28,25 +29,31 @@ export class Customer implements IBuyer {
         this.email = '';
         this.phone = '';
         this.address = '';
+        this.events.emit('order:update');
     }
 
-    validateOrder(): string | null {
+    // Единая валидация всех полей
+    validateUser(): { [key: string]: string } {
+        const errors: { [key: string]: string } = {};
+
         if (!this.payment) {
-            return 'Выберите способ оплаты';
+            errors.payment = 'Выберите способ оплаты';
         }
-        if (!this.address) {
-            return 'Укажите адрес доставки';
-        }
-        return null;
-    }
-
-    validateContacts(): string | null {
         if (!this.email) {
-            return 'Укажите email';
+            errors.email = 'Укажите email';
         }
         if (!this.phone) {
-            return 'Укажите телефон';
+            errors.phone = 'Укажите телефон';
         }
-        return null;
+        if (!this.address) {
+            errors.address = 'Укажите адрес доставки';
+        }
+
+        return errors;
+    }
+
+    // Проверка, валидны ли данные
+    isValid(): boolean {
+        return Object.keys(this.validateUser()).length === 0;
     }
 }
