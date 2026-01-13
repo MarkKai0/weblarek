@@ -60,6 +60,10 @@ const basket = new Basket(events, cloneTemplate(basketTemplate));
 const orderForm = new FormOrder(events, cloneTemplate(orderTemplate) as HTMLFormElement);
 const contactsForm = new FormContacts(events, cloneTemplate(contactsTemplate) as HTMLFormElement);
 
+const success = new Success(cloneTemplate(successTemplate), {
+    onClick: () => modal.close()
+});
+
 events.on('order:update', () => {
     const buyer = customerModel.getData();
     const errors = customerModel.validateUser();
@@ -78,7 +82,6 @@ events.on('order:update', () => {
 });
 
 
-
 //Cоздаем один раз
 const card = new CardPreview(cloneTemplate(cardPreviewTemplate), {
     onClick: () => {
@@ -93,7 +96,7 @@ const card = new CardPreview(cloneTemplate(cardPreviewTemplate), {
 events.on('catalog:changed', () => {
     const itemCards = productsModel.getItems().map((item) => {
         const card = new CardCatalog(cloneTemplate(cardCatalogTemplate), {
-            onClick: () => events.emit('card:select', item)
+            onClick: () => events.emit('card:select', item) 
         });
         return card.render({
             ...item,
@@ -140,6 +143,10 @@ events.on('preview:changed', (item: IProduct) => {
     });
 });
 
+events.on('card:select', (item: IProduct) => {
+    productsModel.setPreview(item);
+});
+
 // Логика добавления/удаления товара
 events.on('card:toggle', (item: IProduct) => {
     if (cartModel.hasItem(item.id)) {
@@ -165,16 +172,12 @@ events.on('basket:remove', (item: IProduct) => {
 
 // Начало оформления заказа
 events.on('order:start', () => {
-    const buyer = customerModel.getData();
-    const errorsObj = customerModel.validateUser();
-    const errorsString = Object.values(errorsObj).join('. ');
-
     modal.render({
         content: orderForm.render({
-            payment: buyer.payment,
-            address: buyer.address,
-            valid: Object.keys(errorsObj).length === 0,
-            errors: errorsString
+            payment: customerModel.getData().payment,
+            address: customerModel.getData().address,
+            valid: true,
+            errors: ''
         })
     });
 });
@@ -191,16 +194,12 @@ events.on('order.address:change', ({ value }: { value: string }) => {
 
 // Переход к форме контактов
 events.on('order:submit', () => {
-    const buyer = customerModel.getData();
-    const errorsObj = customerModel.validateUser(); // получаем объект ошибок
-    const errorsString = Object.values(errorsObj).join('. '); // превращаем в строку
-
     modal.render({
         content: contactsForm.render({
-            email: buyer.email,
-            phone: buyer.phone,
-            valid: Object.keys(errorsObj).length === 0,
-            errors: errorsString
+            email: customerModel.getData().email,
+            phone: customerModel.getData().phone,
+            valid: true,
+            errors: ''
         })
     });
 });
@@ -225,10 +224,6 @@ events.on('contacts:submit', () => {
 
     larekApi.postOrder(orderData)
         .then((result) => {
-            const success = new Success(cloneTemplate(successTemplate), {
-                onClick: () => modal.close()
-            });
-
             modal.render({
                 content: success.render({ total: result.total })
             });

@@ -23,7 +23,6 @@ export class Basket extends Component<IBasketData> {
     set items(items: HTMLElement[]) {
         this.listElement.replaceChildren(...items);
         this.buttonElement.disabled = items.length === 0;
-        this.container.classList.toggle('basket_empty', items.length === 0);
     }
 
 
