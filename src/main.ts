@@ -68,18 +68,27 @@ events.on('order:update', () => {
     const buyer = customerModel.getData();
     const errors = customerModel.validateUser();
 
-    const errorsString = Object.values(errors).join('. ');
+    // Для формы заказа (только payment и address)
+    const orderErrors: Record<string, string> = {};
+    if (errors.payment) orderErrors.payment = errors.payment;
+    if (errors.address) orderErrors.address = errors.address;
 
     orderForm.payment = buyer.payment;
     orderForm.address = buyer.address;
-    orderForm.valid = Object.keys(errors).length === 0;
-    orderForm.errors = errorsString;
+    orderForm.valid = !orderErrors.payment && !orderErrors.address;
+    orderForm.errors = Object.values(orderErrors).join('. ');
+
+    // Для формы контактов (только email и phone)
+    const contactErrors: Record<string, string> = {};
+    if (errors.email) contactErrors.email = errors.email;
+    if (errors.phone) contactErrors.phone = errors.phone;
 
     contactsForm.email = buyer.email;
     contactsForm.phone = buyer.phone;
-    contactsForm.valid = Object.keys(errors).length === 0;
-    contactsForm.errors = errorsString;
+    contactsForm.valid = !contactErrors.email && !contactErrors.phone;
+    contactsForm.errors = Object.values(contactErrors).join('. ');
 });
+
 
 
 //Cоздаем один раз
@@ -173,14 +182,10 @@ events.on('basket:remove', (item: IProduct) => {
 // Начало оформления заказа
 events.on('order:start', () => {
     modal.render({
-        content: orderForm.render({
-            payment: customerModel.getData().payment,
-            address: customerModel.getData().address,
-            valid: true,
-            errors: ''
-        })
+        content: orderForm.render({})
     });
 });
+
 
 // Выбор способа оплаты
 events.on('order:payment', ({ payment }: { payment: string }) => {
@@ -195,14 +200,10 @@ events.on('order.address:change', ({ value }: { value: string }) => {
 // Переход к форме контактов
 events.on('order:submit', () => {
     modal.render({
-        content: contactsForm.render({
-            email: customerModel.getData().email,
-            phone: customerModel.getData().phone,
-            valid: true,
-            errors: ''
-        })
+        content: contactsForm.render({})
     });
 });
+
 
 // Изменение email
 events.on('contacts.email:change', ({ value }: { value: string }) => {
@@ -232,15 +233,6 @@ events.on('contacts:submit', () => {
             customerModel.removeData();
         })
         .catch((err) => console.error(err));
-});
-
-// Логика модального окна
-events.on('modal:open', () => {
-    document.body.style.overflow = 'hidden';
-});
-
-events.on('modal:close', () => {
-    document.body.style.overflow = '';
 });
 
 // Загрузка списка товаров
